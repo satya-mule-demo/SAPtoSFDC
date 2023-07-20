@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<error-handler name="global-error-handler" doc:id="7d13b62e-436d-4f7c-a518-0ea028d1c766" doc:description="Global Error handler to support apis">
+			
+			<!-- Validation Errors -->
+			<on-error-propagate type="VALIDATION:NOT_BLANK_STRING" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="9835fa34-7f5a-46bb-a7fe-0dfe613cd3ec">
+				<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="d7b28db0-7927-42c4-b9a5-92502438925d" variableName="httpStatus" />      
+				<set-variable value="Business" doc:name="setErrorType" doc:id="22a0901d-e727-4334-abeb-5237948e00db" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="3b8bb987-5519-49a2-b36f-bb5b7b9a1078" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="VALIDATION:NOT_ELAPSED_TIME" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="46884ec0-1331-438d-8b6e-ffd7954ec172">
+				<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="9a710ce5-a10c-4c8e-9d07-adcc3e209391" variableName="httpStatus" />      
+				<set-variable value="Business" doc:name="setErrorType" doc:id="911d0918-7b38-40be-89bb-10bcedfecb00" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="9b12bec2-1c13-4012-a41c-d73574bab7ac" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="VALIDATION:INVALID_EMAIL" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="8813b8fd-284f-414b-87fe-6f75eea8288f">
+				<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="297c2530-9bc5-419a-a2e1-80e99ad2dec8" variableName="httpStatus" />      
+				<set-variable value="Business" doc:name="setErrorType" doc:id="095c4992-9961-43d3-bd45-0d787cd8e788" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="d341ece4-9c62-4864-accb-ad78a4228072" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="VALIDATION:NOT_EMPTY_COLLECTION" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="b9ebacda-db8a-4bb8-a56b-2521921ebb8f">
+				<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="512df466-df7a-44f3-ab88-9892a0bc37cc" variableName="httpStatus" />      
+				<set-variable value="Business" doc:name="setErrorType" doc:id="f42c3db0-0a25-43ad-ba50-17a5e69c6194" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="59dbe986-0827-427c-ab0b-9b64483dcee0" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="VALIDATION:INVALID_BOOLEAN" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="c0e7b74b-9f9f-4286-b731-f61a912826ca">
+				<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="489837f7-3aba-496c-8351-fb17244179fe" variableName="httpStatus" />      
+				<set-variable value="Business" doc:name="setErrorType" doc:id="faeec998-61d3-4e98-85c0-fde0ce7a1748" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="735a1432-f66a-4554-9131-73429d938cb8" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="VALIDATION:INVALID_IP" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="2a50ca0b-6383-462c-b06e-cb717851c778">
+				<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="00ce86b7-79eb-4a91-a72f-895d0cbc8f6e" variableName="httpStatus" />      
+				<set-variable value="Business" doc:name="setErrorType" doc:id="8d10715d-9da6-42ea-85df-a8fab3537f04" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="92e60eaa-d73e-47ac-9b0e-348662f4ab5c" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="VALIDATION:REJECTED_IP" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="9c4560da-a72c-4822-bf15-b83bfe88d541">
+				<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="7c582a43-66ee-4381-9a96-104809b077c7" variableName="httpStatus" />      
+				<set-variable value="Business" doc:name="setErrorType" doc:id="9d99c6d8-adf4-4dfc-8cfd-f8c01a645427" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="f79c01dc-a7af-4ad3-90cd-db78c79612e0" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="VALIDATION:BLANK_STRING" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="42d8318b-5aaa-46cd-b0b0-af7a9d269f1b">
+				<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="c97435f3-c6ad-4fb1-99db-86b6be522fa6" variableName="httpStatus" />      
+				<set-variable value="Business" doc:name="setErrorType" doc:id="1552dacd-e03b-446c-9cc5-cb92d294441c" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="524318fb-51af-41e9-ba6f-41f8f9656ede" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="VALIDATION:ELAPSED_TIME" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="c7026181-bbc4-403c-9720-1c27340adb2b">
+				<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="66f472a9-6f6b-425e-b5c1-2a33905bcfe1" variableName="httpStatus" />      
+				<set-variable value="Business" doc:name="setErrorType" doc:id="d6e90c34-b7b4-4016-a21b-156112b6bfdd" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="a0de6026-e4a9-4bb9-a660-0fe6bdc6951e" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="VALIDATION:EMPTY_COLLECTION" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="b5ca004d-bfb4-4afb-bc7e-78e18b5667b8">
+				<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="05383f5f-449b-4b6d-8b6c-ca83ec898a3b" variableName="httpStatus" />      
+				<set-variable value="Business" doc:name="setErrorType" doc:id="0e4d96a5-a8ea-483a-a34e-b32ea99a8686" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="7584cd25-1912-452a-9fd5-eb1eabe35501" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="VALIDATION:NULL" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="9c52eb6b-1240-4e36-a58e-7bed37569908">
+				<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="067828c4-f029-442d-b796-66de9b95af02" variableName="httpStatus" />      
+				<set-variable value="Business" doc:name="setErrorType" doc:id="c4bf28ce-b0cb-44b4-bddf-42853693c06d" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="5d4b8361-2314-4698-bcb1-e30e20c548e8" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="VALIDATION:NOT_NULL" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="5177cfef-1881-4553-ba6a-228b0c94430a">
+				<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="c4653739-0044-4bc1-aa53-250bb24225cd" variableName="httpStatus" />      
+				<set-variable value="Business" doc:name="setErrorType" doc:id="8fef6f14-88e9-4ce1-84e8-5c51f5f78c58" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="e8731e05-256a-4416-90f9-ff7392208bf1" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="VALIDATION:INVALID_NUMBER" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="ad69c82f-65b6-4105-8bc7-a7311fa59ee6">
+				<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="83c56f75-b596-4c07-90f2-24e63ae06fd6" variableName="httpStatus" />      
+				<set-variable value="Business" doc:name="setErrorType" doc:id="e9a12d55-90cf-4c13-9edd-2a2f463aac10" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="0d8668a7-8d12-48d6-ac22-e16f1f20a889" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="VALIDATION:INVALID_TIME" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="1235ba5d-094f-437a-8d8c-35f983362462">
+				<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="d854bb29-ff0a-4140-92cc-ba91f6eca907" variableName="httpStatus" />      
+				<set-variable value="Business" doc:name="setErrorType" doc:id="b1d0152e-ff9c-402b-8122-7a31c9d71360" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="f9ec0a37-b786-416e-b817-3bdc3202aeae" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="VALIDATION:INVALID_URL" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="ec921f66-1943-4d3a-bdea-96c116093084">
+				<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="3710a092-c6e3-4bbc-88d6-03d5238304a0" variableName="httpStatus" />      
+				<set-variable value="Business" doc:name="setErrorType" doc:id="656482c2-45be-4056-a047-9a31366bce06" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="c0a3c79e-0d85-472e-a2e4-9cbaf7e57358" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="VALIDATION:MISMATCH" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="66aeb473-a266-4a36-ba06-ecfdfd9bf7f4">
+				<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="c2721a31-5d52-4f65-920a-d754681b69a4" variableName="httpStatus" />      
+				<set-variable value="Business" doc:name="setErrorType" doc:id="bc0d14d2-cee0-45db-b6a5-832a986d216a" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="f97bb2ef-f9ff-4f4d-a229-540b9f02f2e9" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="VALIDATION:INVALID_SIZE" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="480b0fff-f525-47a2-b636-b2f2774e5567">
+				<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="a9dcc51e-c17e-4e00-9b27-9adbefb5515f" variableName="httpStatus" />      
+				<set-variable value="Business" doc:name="setErrorType" doc:id="e32cb275-6597-4a71-9f5c-850c52ff87ec" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="62e10c0d-93e2-4e0d-9c07-bbfc7d73a5f2" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="VALIDATION:MULTIPLE" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="22543039-f868-46d2-9f83-d386e157b8e2">
+				<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="5a835d1c-d17a-4169-9ebb-5f6371f7e439" variableName="httpStatus" />      
+				<set-variable value="Business" doc:name="setErrorType" doc:id="5e4edf2e-4d31-4e05-87fc-f69cd03335c5" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="036c75ce-c1c2-48ac-ab32-4f2eba74cd80" name="cf:error-handler" />           
+			</on-error-propagate>
+			
+			
+			<!-- APIKIT Errors -->
+			<on-error-propagate type="APIKIT:BAD_REQUEST">
+				<set-variable value="400" doc:name="setHTTPStatus - 400" doc:id="63f0e66c-ae47-49c4-bd48-50183b334f0a" variableName="httpStatus" />      
+				<set-variable value="APIKIT" doc:name="setErrorType" doc:id="cce6374b-5bfc-4cd2-a4d3-410649fb6a75" variableName="errorType" />
+				  <flow-ref doc:name="cf:error-handler" doc:id="524318fb-51af-41e9-ba6f-41f8f9656ede" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="APIKIT:NOT_FOUND">
+				<set-variable value="404" doc:name="setHTTPStatus - 404" doc:id="6920fc8c-d882-477d-b94b-2ed33e030c0e" variableName="httpStatus" />      
+				<set-variable value="APIKIT" doc:name="setErrorType" doc:id="59383a87-6d06-482d-9683-de9b58470894" variableName="errorType" />
+				 <flow-ref doc:name="cf:error-handler" doc:id="524318fb-51af-41e9-ba6f-41f8f9656ede" name="cf:error-handler" />            
+			</on-error-propagate>
+			<on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+				<set-variable value="405" doc:name="setHTTPStatus - 405" doc:id="20b69eda-35b7-4517-86ee-16b2d99b0624" variableName="httpStatus" />      
+				<set-variable value="APIKIT" doc:name="setErrorType" doc:id="ec207f6b-d8ed-49a5-9b32-30d100c92158" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="524318fb-51af-41e9-ba6f-41f8f9656ede" name="cf:error-handler" />             
+			</on-error-propagate>
+			<on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+				<set-variable value="406" doc:name="setHTTPStatus - 406" doc:id="43fd2231-b766-4f06-b330-eccf1cec9088" variableName="httpStatus" />      
+				<set-variable value="APIKIT" doc:name="setErrorType" doc:id="c1139f51-75d0-4ef5-b1aa-36797a48d0de" variableName="errorType" />
+				 <flow-ref doc:name="cf:error-handler" doc:id="524318fb-51af-41e9-ba6f-41f8f9656ede" name="cf:error-handler" />            
+			</on-error-propagate>
+			<on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+				<set-variable value="415" doc:name="setHTTPStatus - 415" doc:id="d391c4c8-28fc-4178-996f-c1c20ab9e103" variableName="httpStatus" />      
+				<set-variable value="APIKIT" doc:name="setErrorType" doc:id="647a2c03-8fbc-48f8-aa55-5887fd39d64a" variableName="errorType" />
+				  <flow-ref doc:name="cf:error-handler" doc:id="524318fb-51af-41e9-ba6f-41f8f9656ede" name="cf:error-handler" />           
+			</on-error-propagate>
+			<on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+				<set-variable value="501" doc:name="setHTTPStatus - 501" doc:id="c0f1af7a-4e92-456d-8f6e-25e8bb77a19f" variableName="httpStatus" />      
+				<set-variable value="APIKIT" doc:name="setErrorType" doc:id="ea88eeb9-4e75-495a-8e86-8b55edbc3a13" variableName="errorType" />
+				  <flow-ref doc:name="cf:error-handler" doc:id="524318fb-51af-41e9-ba6f-41f8f9656ede" name="cf:error-handler" />           
+			</on-error-propagate>
+			
+			
+			<!-- HTTP Connector Errors -->
+			<on-error-propagate type="HTTP:BAD_REQUEST" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="40e64e14-3036-425e-b2fa-b2d0f8cfe878">
+					<set-variable value="400" doc:name="setHTTPStatus - 400" doc:id="d51dd226-93e2-4a7f-992a-6715cdc04262" variableName="httpStatus" />
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="13e601b8-38e8-44e6-a25b-f7ab14f924ad" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="774f3aec-0e61-4fd2-9aa2-aa1723e88161" name="cf:error-handler" />      	
+				</on-error-propagate>
+				<on-error-propagate type="HTTP:CLIENT_SECURITY" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="2d4b7a7a-bc1b-4b6f-8707-19c76bf381b3">
+					<set-variable value="401" doc:name="setHTTPStatus - 401" doc:id="6b9c32ec-96e3-48b1-8c35-0b52249d08e4" variableName="httpStatus" />      
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="c9292ee0-6d42-4743-b907-13fa799d57f7" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="6e4d84cb-0d5b-4027-b739-7bfa263e8a44" name="cf:error-handler" />      	
+				</on-error-propagate>
+				<on-error-propagate type="HTTP:CONNECTIVITY" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="7ff35402-1ed6-464f-97ed-34ca94fbc40b">
+					<set-variable value="503" doc:name="setHTTPStatus - 503" doc:id="fbf78897-8cf6-404e-bed1-fe026001a246" variableName="httpStatus" />      
+					<set-variable value='#["HTTP:CONNECTIVITY" default "Technical"]' doc:name="setErrorType" doc:id="551cd641-76e1-4ee3-9e02-30d4c22e50a0" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="4a61e982-71c2-4290-9942-7bbfc54cff64" name="cf:error-handler" />      	
+				</on-error-propagate>
+				<on-error-propagate type="HTTP:FORBIDDEN" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="06c01f0c-1ea8-4e5c-a2af-972eff485f34">
+					<set-variable value="403" doc:name="setHTTPStatus - 403" doc:id="7d887df6-7faf-4e33-befb-8cc54f7b517e" variableName="httpStatus" />      
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="d0388807-2398-4840-a4ae-8792418cb556" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="ed20783c-4687-4cdc-8c6c-4ca87f97641b" name="cf:error-handler" />      	
+				</on-error-propagate>
+				<on-error-propagate type="HTTP:INTERNAL_SERVER_ERROR" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="0aadea8f-d057-4536-8669-d3c45c5deebe">
+					<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="6dc47278-cb30-4716-95dd-8ab5a2f17537" variableName="httpStatus" />      
+					<set-variable value="Business" doc:name="setErrorType" doc:id="07412ceb-ca05-461f-9e05-57eb606e0eec" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="f23bba21-5f4a-4609-8617-490df2acadfe" name="cf:error-handler" />           
+				</on-error-propagate>
+				<on-error-propagate type="HTTP:METHOD_NOT_ALLOWED" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="5e550aa4-a8fc-4304-b950-5740a5ba966e">
+					<set-variable value="405" doc:name="setHTTPStatus - 405" doc:id="619b3596-f92a-4ccb-a67a-8c8027c3ddbb" variableName="httpStatus" />      
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="6dd3c2da-3927-4630-9fba-e04099aec07f" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="20e7c5fc-f6c4-461d-890c-7c470f020e39" name="cf:error-handler" />           
+				</on-error-propagate>
+				<on-error-propagate type="HTTP:NOT_ACCEPTABLE" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="e42e70b5-3469-45d8-b8c9-af6c784c7ace">
+					<set-variable value="406" doc:name="setHTTPStatus - 406" doc:id="d706b05b-0271-43fc-aa3a-ef7bd53ccb5e" variableName="httpStatus" />      
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="31b2dcb6-f238-41a3-9998-4703bbfe0f5c" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="e5d067dd-1cf8-432d-bca3-a0e2d0552c94" name="cf:error-handler" />           
+				</on-error-propagate>
+				<on-error-propagate type="HTTP:NOT_FOUND" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="21de1f49-27eb-4089-bd5a-5340456d60c1">
+					<set-variable value="404" doc:name="setHTTPStatus - 404" doc:id="c06687cb-3634-49ac-aa74-80f492134c61" variableName="httpStatus" />      
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="5d8e9de3-124f-49a1-8976-35bb8d12b3f3" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="5bf007b6-b218-4481-9b94-a5e6ca07f884" name="cf:error-handler" />           
+				</on-error-propagate>
+				<on-error-propagate type="HTTP:PARSING" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="a71a7ffb-ae3c-4559-b03c-9a41fe6e3f6a">
+					<set-variable value="400" doc:name="setHTTPStatus - 400" doc:id="a8e5f80e-101e-4b54-84f4-6e33c7244a5c" variableName="httpStatus" />      
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="83c04bee-b848-4475-b890-b7242a8431ce" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="8d1df052-d9ec-4bb0-8d63-a1d0518235ea" name="cf:error-handler" />           
+				</on-error-propagate>
+				<on-error-propagate type="HTTP:RETRY_EXHAUSTED" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="a9301642-b285-4ef5-b83b-e8cdead2a765">
+					<set-variable value="503" doc:name="setHTTPStatus - 503" doc:id="f3568935-502e-4085-bb5c-72416f278fe5" variableName="httpStatus" />       
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="69cd36c8-95ff-4c24-ba7e-a640e1d624ca" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="99aafc58-e5f9-48ce-ab9a-1e7ca8654198" name="cf:error-handler" />          
+				</on-error-propagate>
+				<on-error-propagate type="HTTP:SECURITY" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="15dfe3b8-e3ed-465f-95f9-e65ad29d3956">
+					<set-variable value="401" doc:name="setHTTPStatus - 401" doc:id="c0422017-08b9-43d8-a215-cda921aa0aa3" variableName="httpStatus" />       
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="b890f309-3309-4fc8-94b8-0d8e6a9f07ef" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="43021613-09ae-4525-954b-acf07ad4ad35" name="cf:error-handler" />          			
+				</on-error-propagate>
+				<on-error-propagate type="HTTP:TIMEOUT" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="4016a7cf-6239-4b8f-8e30-f5d57454077a">
+					<set-variable value="504" doc:name="setHTTPStatus - 504" doc:id="dc912b57-85e1-4f0c-9d5c-e947aebabef5" variableName="httpStatus" />       
+					<set-variable value='#["HTTP:TIMEOUT" default "Technical"]' doc:name="setErrorType" doc:id="c22bdaca-ffb7-4855-ae2a-215b4899186f" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="9a4fd199-567f-43ee-b39d-1d04d99c4adb" name="cf:error-handler" />          			
+				</on-error-propagate>
+				<on-error-propagate type="HTTP:TOO_MANY_REQUESTS" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="56e1a9e8-e5a8-45a7-9e08-2d8df602cc74">
+					<set-variable value="429" doc:name="setHTTPStatus - 429" doc:id="634651c9-7724-4d40-bd9d-ba44d2554461" variableName="httpStatus" />       
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="051aca27-8fe9-4129-90f5-fc16f0712156" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="691f8743-56fa-43e1-9e66-68d5643e757e" name="cf:error-handler" />          			
+				</on-error-propagate>
+				<on-error-propagate type="HTTP:UNAUTHORIZED" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="2b666bd7-be67-44ee-a6db-bab949121889">
+					<set-variable value="403" doc:name="setHTTPStatus - 403" doc:id="8ddcc913-9907-4cc0-be72-97dcf0e38427" variableName="httpStatus" />       
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="bb8455d6-455f-46d3-bbe3-557ca98f1fec" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="07168d4b-0e1e-4dfb-bd0f-07db2e27873e" name="cf:error-handler" />          			
+				</on-error-propagate>
+				<on-error-propagate type="HTTP:UNSUPPORTED_MEDIA_TYPE" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="7cc06545-472b-4e24-92e9-df717c3448f9">
+					<set-variable value="415" doc:name="setHTTPStatus - 415" doc:id="ecc3cd47-e934-480d-b497-7787cd352150" variableName="httpStatus" />       
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="c0ce574d-c34d-436c-a568-c2eef0221e14" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="2dcc7215-2893-4d8b-af1c-ac6b371150c4" name="cf:error-handler" />          			
+				</on-error-propagate>
+				<on-error-propagate type="HTTP:SERVICE_UNAVAILABLE" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="4afc2402-b34e-4eef-b8fd-e294ccb3bdf9">
+					<set-variable value="503" doc:name="setHTTPStatus - 503" doc:id="ef584723-8067-42b4-a982-e62f64eb2695" variableName="httpStatus" />       
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="86f4a282-4272-4d71-af8c-b224be5cfa10" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="df67926a-0f51-4ad3-bd72-fb99073f484f" name="cf:error-handler" />          			
+				</on-error-propagate>
+				
+				<on-error-propagate type="STREAM_MAXIMUM_SIZE_EXCEEDED" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="950d70c7-5c61-4bb9-b98e-d3ba7a87934b">
+					<set-variable value="413" doc:name="setHTTPStatus - 415" doc:id="e281b1de-359a-4d49-bfda-0c254a82a426" variableName="httpStatus" />       
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="215edad7-caad-421f-98bb-7201aeadcc3a" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="7711463d-fc6e-4830-970b-30d706e4d9fd" name="cf:error-handler" />          			
+				</on-error-propagate>
+			
+				<!-- Web Service Consumer Connector Errors -->
+			<!-- 	<on-error-propagate type="WSC:BAD_REQUEST" enableNotifications="true" logException="true" doc:name="On Error propagate">
+				<set-variable value="400" doc:name="setHTTPStatus - 400" doc:id="18261566-47e4-4f28-bef5-c8cd7e7f6a63" variableName="httpStatus" />
+				<set-variable value="Technical" doc:name="setErrorType" doc:id="92645fee-9fff-44dd-8acb-57fcc319ade8" variableName="errorType" />
+				<flow-ref doc:name="cf:error-handler" doc:id="e8457ce5-d1b1-4faa-8702-c6aa9d4c5734" name="cf:error-handler" /> 
+			</on-error-propagate>
+			<on-error-propagate type="WSC:SOAP_FAULT" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="3cb5fcad-3458-4592-8a6f-1b3c7dd6c688">
+					<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="a5ab27df-37e6-47fd-a8b8-7ac3c34f3850" variableName="httpStatus" />      
+					<set-variable value="Business" doc:name="setErrorType" doc:id="ccd10889-ed61-4b9d-a2ea-b723e38e4af6" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="780b103b-8e45-4045-904e-048b17a72743" name="cf:error-handler" />      	
+			</on-error-propagate>
+			<on-error-propagate type="WSC:BAD_RESPONSE" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="5ffcf100-3536-4363-9257-aa53cd55bb12">
+					<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="85b58673-952b-484e-8c80-6ad7886b1cb4" variableName="httpStatus" />      
+					<set-variable value="Business" doc:name="setErrorType" doc:id="45a8e55c-d4c4-4181-bf2b-f23299789cf4" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="fd2ed2e7-3095-4cf3-942b-d64c8b81cb50" name="cf:error-handler" />      	
+			</on-error-propagate>
+			<on-error-propagate type="WSC:CANNOT_DISPATCH" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="ec351a24-bbf9-4428-8bf7-720fb73dfd4f">
+					<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="620f72fe-2628-48c9-a9e8-4ca6b4fd3098" variableName="httpStatus" />      
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="2e6890a8-5388-4e36-ba4a-b4c8c15976b5" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="9b0a6ead-746b-4844-8a8d-159915460d95" name="cf:error-handler" />      	
+			</on-error-propagate>
+			<on-error-propagate type="WSC:CONNECTIVITY" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="7711c0e4-17c1-4a45-b1b5-36b6b81bb28a">
+					<set-variable value="503" doc:name="setHTTPStatus - 503" doc:id="499c2e8c-8463-4384-9206-195ac856dd43" variableName="httpStatus" />      
+					<set-variable value="#['WSC:CONNECTIVITY' default &quot;Technical&quot;]" doc:name="setErrorType" doc:id="cd1ad7af-6cd4-4110-bd9e-4288d5d64643" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="313808bd-2935-426e-8261-eb94b75a7f8e" name="cf:error-handler" />      	
+			</on-error-propagate>
+			<on-error-propagate type="WSC:ENCODING" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="e3b0dc46-729d-42c5-82fb-1a28bb8a1b58">
+					<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="4fc295d8-ed31-4207-8466-c1adfe721088" variableName="httpStatus" />      
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="fca49634-c8be-4035-8a2b-52ec00d0724e" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="5a5bf070-2486-4303-8be8-2e548ca96147" name="cf:error-handler" />      	
+			</on-error-propagate>
+			<on-error-propagate type="WSC:INVALID_WSDL" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="7817d2d6-1ed7-4bd0-974e-54bc07888645">
+					<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="f3084dbe-1b8f-4a53-b50c-f7943ddf592b" variableName="httpStatus" />      
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="99e2f2c5-6e48-45d4-acff-a921aa27f0ee" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="080390a9-c529-4f01-b4c2-2765fad6f610" name="cf:error-handler" />      	
+			</on-error-propagate>
+			<on-error-propagate type="WSC:RETRY_EXHAUSTED" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="b309c7af-5cfc-4923-8efe-7d5b084f8257">
+					<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="71463d18-998f-4cb8-83c6-06db9ba95adf" variableName="httpStatus" />      
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="328c3e3f-281e-4fbd-b49b-77f86561a77d" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="3c5cb925-67fb-4f33-81c4-6d6c1fcd741b" name="cf:error-handler" />      	
+			</on-error-propagate>
+			<on-error-propagate type="WSC:TIMEOUT" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="920e01f8-ca86-4aa0-9ff9-81c984d02971">
+					<set-variable value="408" doc:name="setHTTPStatus - 408" doc:id="016b2e95-b69c-4246-a871-cb17bc8c6869" variableName="httpStatus" />      
+					<set-variable value='#["WSC:TIMEOUT" default "Technical"]' doc:name="setErrorType" doc:id="f3312c5c-0aff-4d90-b40e-05a6cb35720f" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="3fc1f1fa-119b-4fed-a47c-d6b682d8fd2b" name="cf:error-handler" />      	
+			</on-error-propagate>
+			 -->
+			<!-- VM Connector Errors -->
+			<!-- <on-error-propagate type="VM:CONNECTIVITY" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="7ff9c545-2eb7-411e-acc9-e77e88ca4202">
+					<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="78dd7c31-db19-429a-bf47-b78140f0b464" variableName="httpStatus" />      
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="cfd84ddd-2a1a-4f4b-974b-9d5b9db3565b" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="02aa2c47-bfe8-41de-bf43-60ce31215f75" name="cf:error-handler" />      	
+			</on-error-propagate>
+			<on-error-propagate type="VM:QUEUE_TIMEOUT" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="a43dfcca-04f2-4a62-bc12-0c80cc0eee03">
+					<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="ab463a22-e3b4-4778-bc3b-99b8969c8cec" variableName="httpStatus" />      
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="e25777a8-41a3-40f2-be77-124dcb4212d0" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="8a0fd5a6-5cac-4765-a3f1-cc24b58c3224" name="cf:error-handler" />      	
+			</on-error-propagate>
+			<on-error-propagate type="VM:RETRY_EXHAUSTED" enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="fec6252a-bfe7-4900-9466-eab4ebcb2f30">
+					<set-variable value="500" doc:name="setHTTPStatus - 500" doc:id="5afc48df-f525-403b-a183-6bb7f5a1343e" variableName="httpStatus" />      
+					<set-variable value="Technical" doc:name="setErrorType" doc:id="a2a5b304-638c-4fd2-97b7-f293b015c1d4" variableName="errorType" />
+					<flow-ref doc:name="cf:error-handler" doc:id="e4591b98-3414-4b02-aab3-b0836aafd640" name="cf:error-handler" />      	
+			</on-error-propagate>
+			 -->
+			 <!-- Custom Errors -->
+			
+			<!--  Default error propagation -->
+			<on-error-propagate type="ANY" enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="bb532dac-7025-4392-998d-a13dcb206b8f" >
+				<set-variable value="500" doc:name="HTTP Status - 500" doc:id="02c3e02c-c5bd-48b3-be12-996f6f760b08" variableName="httpStatus" /> 
+				<set-variable value="Technical" doc:name="setErrorType" doc:id="f563a2c4-34f5-414f-9a43-3346f8bb0a30" variableName="errorType" />     
+				<flow-ref doc:name="cf:error-handler" doc:id="321120e1-dd8d-4969-a576-f69103715abc" name="cf:error-handler" />     
+			</on-error-propagate>
+	</error-handler>
+	<sub-flow name="cf:error-handler" doc:id="25848822-7505-4d20-86ac-18d6966b55a6" >
+    <ee:transform doc:name="setHTTPStatus" doc:id="bcc12316-c7be-4d05-a922-0a85c86309be" >
+      <ee:variables >
+        <ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/java
+---
+vars.httpStatus default "500"]]></ee:set-variable>  
+      
+</ee:variables>
+    </ee:transform>
+    <ee:transform doc:name="createGenericErrorResponse" doc:id="5a821257-f329-4c07-85d6-b9e545717951" >
+      <ee:message >
+        <ee:set-payload resource="dataweaves/propagate-error-message.dwl" />
+      
+
+</ee:message>
+      
+    </ee:transform>
+    <logger level="INFO" doc:name="logErrorResponse" doc:id="4e711d7d-2ae8-40a5-8ecc-185b77379dae" message="Error occured == #[message]"/>
+    <flow-ref doc:name="publishToMq" doc:id="7475b458-45ef-4088-833e-94abadec9607" name="cf:publish-to-mq"/>
+  
+  
+</sub-flow>
+  
+</mule>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
+	xmlns:s3="http://www.mulesoft.org/schema/mule/s3" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd 
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/s3 http://www.mulesoft.org/schema/mule/s3/current/mule-s3.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	
+	
+  <sub-flow name="cf:health-status" doc:id="09fca531-5238-4575-a87d-82a424b4e452" >
+		<set-payload value='#[%dw 2.0
+&#10;output application/json
+&#10;---
+&#10;{
+&#10;	status: true,
+&#10;	requestId: correlationId,
+&#10;	result: {
+&#10;		message: "UP"
+&#10;	}
+&#10;}]' doc:name="setPayload" doc:id="6734cea5-c884-4ecb-b341-077102bd7cbd" />
+	</sub-flow>
+	
+<sub-flow name="cf:publish-to-mq" doc:id="f7eb3d50-3633-4e35-8ed5-61f528e09d70" >
+    <vm:publish doc:name="Publish" doc:id="b1a359dc-e5b2-465f-86a1-4fec8f01efde" config-ref="VMQueue_Config" sendCorrelationId="ALWAYS" queueName="#[p('notification.vm.queue')]" timeout="60"/>
+    
+  </sub-flow>
+  <flow name="cf:process-errors" doc:id="8494fa67-5ca4-4b67-982d-9bda5f5c2f7b" >
+    <vm:consume doc:name="Consume" doc:id="8d54220e-93dc-44bc-9887-ed6b384c6044" config-ref="VMQueue_Config" queueName="#[p('notification.vm.queue')]" timeout="30"/>
+    <logger level="INFO" doc:name="Message received" doc:id="3026360e-690b-44d6-be4a-56e8dc4923b3" message="#[&quot;Message received from : &quot; ++ p('internal.amq.audit.notificationQueueName')]"/>
+    <validation:is-not-null doc:name="payload" doc:id="6c62fabd-41c7-4a83-977b-d1e9d473450e" value="#[payload]"/>
+    <ee:transform doc:name="Intialize vars" doc:id="47d5a239-3858-4333-b87f-c0a4f5018e87">
+      <ee:message />
+      <ee:variables>
+        <ee:set-variable variableName="originalPayload"><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+      </ee:variables>
+    </ee:transform>
+   <!--  <foreach doc:name="For Each" doc:id="151705af-acc0-4dc4-8a8d-6ae2ab4859b0" collection="#[vars.originalPayload]">
+      <logger level="INFO" doc:name="Logger" doc:id="1841d8bb-eab0-488b-9578-611f6d704aea" message="payload to send to sfdc to create error record == #[payload]"/>
+      <ee:transform doc:name="setPayloadForError" doc:id="e2f04ba4-3b6e-4f21-9c7e-0f895bebd5f5" >
+        <ee:message >
+          <ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+-&#45;&#45;
+[{
+API_Name__c: payload.operationName default payload.errorType   default "",
+Error_Code__c: payload.code default "500",
+Exception_Message__c: payload.errorType default payload.error.message default "internal server error",
+Transaction_Id__c: payload.requestId,
+Type__c:"Inbound"
+}]]]></ee:set-payload>
+        </ee:message>
+      </ee:transform>
+      <salesforce:create doc:name="Create" doc:id="fe44ca12-6c7e-4852-9bd7-8d0a9acc1844" config-ref="Salesforce_Config" type="API_Log__c"/>
+      <ee:transform doc:name="responseFromSapi" doc:id="b2f7aa1e-1bd2-4402-a725-b22b627ad9e6" >
+        <ee:message >
+          <ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+-&#45;&#45;
+payload.items.payload]]></ee:set-payload>
+        </ee:message>
+      </ee:transform>
+      <logger level="INFO" doc:name="Logger" doc:id="4fa9a709-4b08-44b7-862e-f201cf65b682" message="response after insertion of error data = #[payload]"/>
+    
+</foreach>
+    -->
+    <choice doc:name="Choice" doc:id="0bc55765-1024-45fd-ad39-d9c9242886fd" >
+      <when expression="#[!vars.originalPayload.sendNotification]">
+        <ee:transform doc:name="Transform Message" doc:id="f6092785-5885-43de-9cd7-b935e5a82e74" >
+          <ee:message >
+            <ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.originalPayload]]></ee:set-payload>
+          </ee:message>
+        </ee:transform>
+      </when>
+      <otherwise >
+        <flow-ref doc:name="sendNotification" doc:id="5878c96b-9f6e-47b0-b35f-d4778ea7cb36" name="send-notifications"/>
+      </otherwise>
+    </choice>
+  
+</flow>
+
+	
+
+</mule>

@@ -1,0 +1,9 @@
+%dw 2.0
+
+type auto_62d5db9e_71e5_4412_b959_3ae0f1f49f13_Output_Payload = {|
+  correlationId?: String, 
+  "Total Records"?: Any, 
+  status?: String, 
+  message?: String
+|}
+

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+  
+      <flow name="scheduler:\import-transportation-master-data" doc:id="b4dc8629-4c53-43b5-b1f0-bdfe88ecc510" >
+  <scheduler doc:name="transportZoneMaster" doc:id="af0ed79b-0d9c-4644-a8ef-59c40c673350" >
+      <scheduling-strategy >
+        <cron expression="${master.cron.scheduled.tzone}"/>
+      
+</scheduling-strategy> 
+    </scheduler>
+    <logger level="INFO" doc:name="Logger" doc:id="1349c4bc-adf1-47c6-8ad4-50e3685414f0" message="import transportation zone master flow started"/>
+    <flow-ref doc:name="importTransportMasterData" doc:id="60e0589d-d601-4c5a-b912-166f6c80600c" name="mf:import-transport-master-data"/>
+  
+</flow>
+  
+  <flow name="scheduler:\import-route-master-data" doc:id="b4dc8629-4c53-43b5-b1f0-bdfe88ecc510" >
+  <scheduler doc:name="routeMaster" doc:id="af0ed79b-0d9c-4644-a8ef-59c40c673350" >
+      <scheduling-strategy >
+        <cron expression="${master.cron.scheduled.route}"/>
+      
+</scheduling-strategy> 
+    </scheduler>
+    <logger level="INFO" doc:name="Logger" doc:id="1349c4bc-adf1-47c6-8ad4-50e3685414f0" message="import route master flow started"/>
+    <flow-ref doc:name="importRouteMasterData" doc:id="82de24d7-b23c-4032-9182-e01e546904df" name="mf:import-route-master-data"/>
+  
+</flow>
+  <flow name="scheduler:\import-location-master-data" doc:id="a8a503eb-aa14-4cf7-bcad-78da5cf4e9ef" >
+  <scheduler doc:name="locationMaster" doc:id="36b21868-9218-4294-8b7f-fdd684d223a8" >
+      <scheduling-strategy >
+        <cron expression="${master.cron.scheduled.location}"/>
+      
+</scheduling-strategy> 
+    </scheduler>
+    <logger level="INFO" doc:name="Logger" doc:id="72b8b9b0-2fa5-451d-aa9a-7a1104c5a7d6" message="import route master flow started"/>
+    <flow-ref doc:name="importLocationMasterData" doc:id="34114ffb-23c5-4ac0-ac3f-910c7b5d22c0" name="mf:import-location-master-data"/>
+  
+</flow>
+  <flow name="scheduler:\import-sc-master-data" doc:id="0ec9e669-56b7-47c6-83a4-4b5b2bd28f05" >
+  <scheduler doc:name="serviceCenterMaster" doc:id="c86d8579-951f-477a-b5f3-082c67296fe9" >
+      <scheduling-strategy >
+        <cron expression="${master.cron.scheduled.service.center}"/>
+      
+</scheduling-strategy> 
+    </scheduler>
+    <logger level="INFO" doc:name="Logger" doc:id="cb3675f5-f252-4b2b-92b7-7517395462e4" message="import route master flow started"/>
+    <flow-ref doc:name="importServiceCenterMasterData" doc:id="4a71f811-d027-466f-be21-a38ea86844ca" name="mf:import-service-center-master-data"/>
+  
+</flow>
+  <flow name="scheduler:\import-fp-commit-date" doc:id="f2aed280-1815-436b-9ca0-7939052711ff" >
+		<scheduler doc:name="fpCommitDateMaster" doc:id="60c811bc-26d0-4d7c-9dfd-9fe026654dee" >
+			<scheduling-strategy >
+				<cron expression="${master.cron.scheduled.fpcommitdate}"/>
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Logger" doc:id="d0244123-1cea-4041-8ee6-6d0b981983e8" message="import-fp-commit-date-flow started"/>
+		<flow-ref doc:name="Flow Reference" doc:id="452d706a-09cc-46c1-9b98-eae5cce70c46" name="mf:import-fp-commit-dateFlow"/>
+	</flow>
+	<flow name="health-check" doc:id="897e1a58-9364-4658-ba4f-cd959b1b625a" >
+    <http:listener doc:name="Listener" doc:id="146e32da-8bc6-4962-ad82-3165e9bfe25f" config-ref="HTTPS_Listener_config" path="/api/health"/>
+    <flow-ref doc:name="healthStatus" doc:id="f531b19e-df43-4556-9e81-7af9a032e66e" name="cf:health-status"/>
+  </flow>
+<!--   <flow name="location-http-flow" doc:id="574ef1c6-7608-4f17-a117-c75dd76126a9" >
+   <http:listener doc:name="Listener" doc:id="128b938a-b9a6-4ecb-82b0-831299a04531" config-ref="HTTPS_Listener_config" path="/location"/>
+    <flow-ref doc:name="importLocationMaster" doc:id="a68d6e9d-26de-43dc-9339-199f38b50f2b" name="mf:import-location-master-data"/>
+</flow>
+ <flow name="route-http-flow" doc:id="3755537b-1a73-413f-95ff-bcec01780270" >
+   <http:listener doc:name="Listener" doc:id="c3bf04fd-6649-4910-8ecb-6202c209d64c" config-ref="HTTPS_Listener_config" path="/route"/>
+    <flow-ref doc:name="importRouteMaster" doc:id="1f836d34-836a-45cc-aed0-1f1de84ffe13" name="mf:import-route-master-data"/>
+</flow>
+ <flow name="tzone-http-flow" doc:id="2af7cb18-1cb5-4e7b-8150-f2b724defc84" >
+   <http:listener doc:name="Listener" doc:id="4dfc1996-32d6-41ee-940c-4262ff2bf018" config-ref="HTTPS_Listener_config" path="/tzone"/>
+    <flow-ref doc:name="importTransportZoneMaster" doc:id="2312441e-dbbb-492c-9c58-baefbeac071e" name="mf:import-transport-master-data"/>
+</flow>
+ <flow name="service-center-http-flow" doc:id="c6b5aa42-c825-40c5-bc38-95f88ecfa24c" >
+   <http:listener doc:name="Listener" doc:id="92a2c4e0-b116-4ba2-84f7-7317cf11ef77" config-ref="HTTPS_Listener_config" path="/service-center"/>
+    <flow-ref doc:name="importSCMaster" doc:id="4c9c468e-628b-4b0b-b8d9-6bd371b5fe82" name="mf:import-service-center-master-data"/>
+</flow> -->
+  
+</mule>

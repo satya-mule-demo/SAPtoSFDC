@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:sap="http://www.mulesoft.org/schema/mule/sap" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/sap http://www.mulesoft.org/schema/mule/sap/current/mule-sap.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<flow name="mf:import-fp-commit-dateFlow" doc:id="60bf2ff0-1d1d-46ae-8e91-231693b0f5b2" >
+		<http:listener doc:name="Listener" doc:id="3b2a55a4-03e3-4b5f-a446-575e602e442d" config-ref="HTTPS_Listener_config" path="fpcommit" />
+		<os:retrieve doc:name="retrieveBatchJobProgressState" doc:id="ce219d4d-bf6f-485a-b0c1-52f219095ff5" key="#['fpcommitDateStatus']" objectStore="master_object_store" target="progressState">
+			<os:default-value ><![CDATA[null]]></os:default-value>
+		</os:retrieve>
+		<choice doc:name="running?" doc:id="b2502835-9357-4014-9ef9-1967003533a9" >
+			<when expression="#[vars.progressState != 'running' or vars.progressState == null]">
+				<os:store doc:name="storeProgressStateToRunning" doc:id="8aea67e7-0cba-45e3-94d0-9014e899c7d0" key="#['fpcommitDateStatus']" objectStore="master_object_store">
+					<os:value ><![CDATA[#['running']]]></os:value>
+				</os:store>
+				<set-variable value="#[now()]" doc:name="Set Variable" doc:id="1d729b57-cc0f-4095-82f5-9165c3d1ff00" variableName="currentDateTime"/>
+				<flow-ref doc:name="querysapfbcommit" doc:id="d85cfcc4-44f0-4e95-a471-670337841cfc" name="sf:query-sap-fp-commit-dateFlow"/>
+				<choice doc:name="Choice" doc:id="03c820af-794c-4ccf-abe1-2452d3c9ed8b">
+			<when expression="#[sizeOf(payload) &gt;0]">
+						<logger level="INFO" doc:name="Logger" doc:id="2d570492-fc59-4460-83dc-090216bb8f33" message="total number of records after SFDC query == #[sizeOf(payload)]"/>
+						<flow-ref doc:name="Flow Reference" doc:id="2cf15d2e-cb8e-46f2-b600-0ce73237ac8c" name="sf:upsert-fp-commit-date-sfdc"/>
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="NoRecordFound" doc:id="019dde82-3dae-4e8c-8965-7e968dc261fa" message="No cust order record found in sfdc after"/>
+					</otherwise>
+		</choice>
+				<ee:transform doc:name="Transform Message" doc:id="9c5712d0-a787-47eb-8b91-34e7d8b82f1e" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status":"batch process initiated",
+	"Total Records": payload.result.totalRecords default 0,
+	"correlationId": correlationId
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="549ba19f-209a-4adb-91ce-1695f495c77b" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Existing batch job already is in progress. Please try after some time."
+}
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="c51973b2-f02c-4412-a9ef-7cbad6f449e4" message="batch process in progress"/>
+			</otherwise>
+		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d731106a-5c13-4ece-be04-e2ff4f52cfed" >
+				<os:store doc:name="storeProgressStateToNull" doc:id="b5243b3c-a547-49c9-aabe-a91a326b3c3d" key="#['fpcommitDateStatus']" objectStore="master_object_store">
+					<os:value ><![CDATA[#[null]]]></os:value>
+				</os:store>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="sf:query-sap-fp-commit-dateFlow" doc:id="5c09f32e-84ad-4ae2-9791-b43a538e69d7" >
+		<ee:transform doc:name="prepareSAPQuery" doc:id="12788fe9-f393-4fd9-b9cb-e4383854735d" >
+			<ee:message >
+				<ee:set-payload resource="dataweaves/sap-fpcommitdate-query.dwl" />
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="a628d7ea-8893-4b3b-a83d-7f03694452cb" message="#[payload]"/>
+		<sap:sync-rfc doc:name="Synchronous Remote Function Call" doc:id="c5813124-ea41-4745-a033-cf5bbb808f1b" config-ref="SAP_Config" key="RFC_READ_TABLE"/>
+		<logger level="INFO" doc:name="Logger" doc:id="ec4a69a6-191b-45a8-bc93-a27efc59fb50" message="response from sap ===#[payload]"/>
+		<ee:transform doc:name="prepare SAP response" doc:id="ae58603b-c5ef-4e53-a9e1-ea8771e1ee2b" >
+			<ee:message >
+				<ee:set-payload resource="dataweaves/sap-response.dwl" />
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="sf:upsert-fp-commit-date-sfdc" doc:id="98ac62d2-15a3-44d6-9676-281768f75b64">
+		<batch:job jobName="upsertfpCommitDataBatch_Job" doc:id="37c2f584-3cfd-4619-88aa-dd490e8cc334" maxFailedRecords="${batch.maxfailed.records}" blockSize="${batch.block.size}">
+			<batch:process-records>
+				<batch:step name="upsertFPCommitDataBatchStep" doc:id="622a990f-ba24-495e-afa9-aacdcbef39ae">
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="30cfbb4a-6cff-4a8f-b244-952d3ae5ba71" streaming="true" preserveMimeTypes="true">
+						<ee:transform doc:name="Transform Message" doc:id="b685d234-2710-421a-9277-ea285709c670">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<ee:transform doc:name="Transform Message" doc:id="a7c6900b-d0a1-4688-8bf1-e8a8718f4e26" >
+							<ee:message >
+							
+</ee:message>
+							<ee:variables >
+								<ee:set-variable resource="dataweaves/sfdc-fpcommitdate-request.dwl" variableName="fpcommitdatemasterdata" />
+							</ee:variables>
+						
+</ee:transform>
+						<logger level="INFO" doc:name="logTheAggregatedRecords" doc:id="ad476bc4-2ea9-46db-a5e1-261266ebdb81" message="payload sent to upsert == #[vars.fpcommitdatemasterdata]"/>
+						<salesforce:upsert doc:name="Upsert" doc:id="4629961a-67c7-43b1-96d0-3170564de07b" config-ref="Salesforce_Config" objectType="Sales_Order_Item_Schedule_Line__c" externalIdFieldName="External_Id__c">
+							<salesforce:records ><![CDATA[#[vars.fpcommitdatemasterdata]]]></salesforce:records>
+						</salesforce:upsert>
+						<ee:transform doc:name="Transform Message" doc:id="6b3e3627-4664-445d-9a65-ab8e11be7046" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.items.payload]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<logger level="INFO" doc:name="Logger" doc:id="ce3a72b8-e315-4859-b10c-837dd4c5a357" message="payload After Upsert for flow  #[flow.name] ---&gt; #[payload]"/>
+						<ee:transform doc:name="Extract SF records from upsert response" doc:id="1071a077-0cb7-4c7f-83f7-2894fcfa6be7" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( object , index ) ->
+{
+  index:index,
+  errorMessage:if(object.success != true) object.errors[0].message else "",
+  
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<ee:transform doc:name="Extract success and error records" doc:id="fde06af6-4850-4912-9c8b-57fb6faad52b" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<set-variable value="#[sizeOf(vars.successSFRecords)]" doc:name="countOfSuccessfulRecords" doc:id="d6161e46-0d24-4572-bca3-d270be87a46b" variableName="countOfSuccessfulRecords"/>
+						<set-variable value="#[sizeOf(vars.failureSFRecords)]" doc:name="countOfFailedRecords" doc:id="3c1ca907-6c86-4a1f-bcfc-00513feb66c9" variableName="countOfFailedRecords"/>
+						<choice doc:name="Choice" doc:id="46676af5-f5dc-4d43-bb75-252982ae8002" >
+							<when expression="#[sizeOf(vars.failureSFRecords) &gt; 0]">
+								<ee:transform doc:name="prepared payload to write in sftp" doc:id="a533164a-958d-4c69-ab03-7dcfc2830bd9" >
+									<ee:message >
+										<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  DMSPayload: vars.locationMasterData[payload.index],
+  errorMessage: payload.errorMessage
+}]]></ee:set-payload>
+									</ee:message>
+								</ee:transform>
+							</when>
+							<otherwise >
+								<logger level="INFO" doc:name="Logger" doc:id="ef36f575-1adb-450d-948b-a4e6214de639" message="No Error Records while upserting--**"/>
+							</otherwise>
+						</choice>
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<ee:transform doc:name="prepareMigrationResult" doc:id="a25a077c-ed07-4daf-87d8-b993467a19ff" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output text/plain
+---
+"Migration Report: \n"
+
+++ "\n Time [milliseconds]: " 		++ payload.elapsedTimeInMillis!
+++ "\n Total Records: "				++ payload.totalRecords!
+++ "\n Successful Records: "		++ payload.successfulRecords!
+++ "\n Failed Records: "			++ payload.failedRecords!
+++ "\n Loaded Records: "			++ payload.loadedRecords!
+++ "\n Processed Records: " 		++ payload.processedRecords!]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="migrationProcessHasFinished!" doc:id="05bb8541-5ab8-4cf8-88f5-25484ab7d562" message="Migration process has finished: #[payload]"/>
+				<os:store doc:name="storeProgressStateToFinished" doc:id="62c610ca-2a5b-4c89-87dc-578716b197e8" key="#['fpcommitDateStatus']" objectStore="master_object_store">
+					<os:value ><![CDATA[finished]]></os:value>
+				</os:store>
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+</mule>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:sap="http://www.mulesoft.org/schema/mule/sap" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd 
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/sap http://www.mulesoft.org/schema/mule/sap/current/mule-sap.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
+  <os:object-store name="master_object_store" doc:name="Object store" doc:id="666abd0b-4b66-4405-bf5f-264ce2ada942" persistent="false" />
+  
+  <sap:sap-config name="SAP_Config" doc:name="SAP Config"
+    doc:id="c6dbc21e-5dcf-4c3f-9af1-5c8ee7ede819">
+      <sap:simple-connection-provider-connection
+      username="${secure::sap.username}" password="${secure::sap.password}" systemNumber="${secure::sap.sysNumber}"
+      client="${secure::sap.client}" applicationServerHost="${secure::sap.host}" />
+  </sap:sap-config>
+ <salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="8459caa5-8546-4bde-89ff-af430df6878e" >
+		<salesforce:oauth-user-pass-connection consumerKey="#[p('secure::sfdc.consumer.key')]" consumerSecret="#[p('secure::sfdc.consumer.secret')]" username="#[p('secure::sfdc.user')]" password="${secure::sfdc.password}" tokenEndpoint="#[p('secure::sfdc.token.endpoint')]" />
+	</salesforce:sfdc-config>
+  <configuration-properties doc:name="Configuration properties" doc:id="58620d52-fddc-46c3-aa3b-e4b175440eae" file="properties/mule-config-${env}.properties" />
+  <global-property doc:name="Global Property" doc:id="a71776bd-9e9c-4a25-952f-1ec40e3919c7" name="env" value="local" />
+  <vm:config name="VMQueue_Config" doc:name="VM Config" doc:id="0898cae2-7863-4333-94e8-46bd3c4048fb" >
+    <vm:connection />
+    <vm:queues >
+      <vm:queue queueName="${notification.vm.queue}" queueType="PERSISTENT"/>
+    </vm:queues>
+  </vm:config>
+   <email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="b8c2104d-8437-4487-b587-747ad35b2bb1" >
+    <email:smtp-connection host="${smtp.host}" user="${secure::smtp.user}" password="${secure::smtp.password}" />
+  </email:smtp-config>
+  <secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="f51dff5a-6bec-482b-b2ab-d423846bfc0f" file="properties/mule-secure-config-${env}.properties" key="${secure.key}" />
+  <global-property doc:name="Global Property" doc:id="7ddd6098-f4c9-4bf7-ae89-f6c81949c98f" name="secure.key" value="1234567887654321" />
+  <http:listener-config name="HTTPS_Listener_config" doc:name="HTTP Listener config" doc:id="077e03bb-9b7f-49f9-9ab3-f127ec34ef09" >
+    <http:listener-connection host="0.0.0.0" port="${https.port}" protocol="HTTPS" tlsContext="TLS_Context"/>
+  </http:listener-config>
+ <tls:context name="TLS_Context" doc:name="TLS Context" doc:id="0c279393-0f9a-411e-9886-b3ecf8d230ba" >
+		<tls:key-store type="jks" path="${key.store.path}" alias="${secure::key.store.alias}" keyPassword="${secure::key.store.password}" password="${secure::key.store.password}"/>
+	</tls:context>
+</mule>

@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sap="http://www.mulesoft.org/schema/mule/sap"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd 
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd 
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/sap http://www.mulesoft.org/schema/mule/sap/current/mule-sap.xsd">
+	
+  <flow name="mf:import-transport-master-data" doc:id="62d5db9e-71e5-4412-b959-3ae0f1f49f13" >
+    <os:retrieve doc:name="retrieveBatchJobProgressState" doc:id="f07d7537-9835-41dd-b5bc-f4633212c616" key="#['tzoneStatus']" target="progressState" objectStore="master_object_store">
+			<os:default-value ><![CDATA[null]]></os:default-value>
+
+		</os:retrieve>
+    <choice doc:name="running?" doc:id="b46c65b8-32bd-4065-90e6-7c6bfe8d7ad6" >
+			<when expression="#[vars.progressState != 'running' or vars.progressState == null]">
+				<os:store doc:name="storeProgressStateToRunning" doc:id="0f576b1a-a298-462d-9a5a-25eb583c6853" key="#['tzoneStatus']" objectStore="master_object_store">
+					<os:value ><![CDATA[#['running']]]></os:value>
+				</os:store>
+				<flow-ref doc:name="querySapTransportationMaster" doc:id="d815b585-227a-43f1-bc4a-89dca016a7bb" name="sf:query-sap-transportation-master"/>
+				<choice doc:name="Choice" doc:id="43ebce01-8e5e-471e-8ecb-19679258700a">
+          <when expression="#[sizeOf(payload) &gt;0]">
+            <logger level="INFO" doc:name="Logger" doc:id="5d4d4f2f-00c6-4e08-a545-d0d9c34b3d56" message="total number of records after SFDC query == #[sizeOf(payload)]" />
+            <flow-ref doc:name="writeTransportationMasterDataInSFDC" doc:id="6cf899a0-bbbc-4089-bcff-bc3e72bba44b" name="sf:import-master-data-tzone" />
+          </when>
+          <otherwise >
+            <logger level="INFO" doc:name="noRecordFound" doc:id="5bba20a3-18e9-47e4-b494-12d5d847eceb" message="No cust order record found in sfdc after #[vars.lastQueryDate]"/>
+          </otherwise>
+        </choice>
+				<ee:transform doc:name="outputPayload" doc:id="773ae349-4c08-42cb-9812-1a11797d04a5" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status":"batch process initiated",
+	"Total Records": payload.result.totalRecords default 0,
+	"correlationId": correlationId
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			
+</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="8a05c854-ceca-4a0b-99fa-a4899b041ea9" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Existing batch job already is in progress. Please try after some time."
+}
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="d3360eaf-16cc-45b8-9387-164dd8894e2c" message="Batch Job is in progress."/>
+			</otherwise>
+		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="de9f38e8-e64c-4637-b799-8fa3d08efe9d" >
+        <os:store doc:name="storeProgressStateToNull" doc:id="2d2e1772-c666-45de-9f4d-6bacab2dd9c5" key="#['tzoneStatus']" objectStore="master_object_store">
+          <os:value><![CDATA[#[null]]]></os:value>
+        </os:store>
+			</on-error-propagate>
+		</error-handler>
+	
+</flow>
+
+<flow name="sf:query-sap-transportation-master" doc:id="b4bedc13-b7f7-4cae-bf71-55f99475fefb" >
+   <ee:transform doc:name="prepareSAPQuery" doc:id="40f03bb9-ce21-4c9c-8c08-31486932bde1">
+      <ee:message>
+        <ee:set-payload resource="dataweaves/sap-transportation-query.dwl" />
+      
+</ee:message>
+    </ee:transform>
+    <logger level="INFO" doc:name="Logger" doc:id="3e05b132-66d6-498b-84ce-689168d1d334" message="payload in function == #[payload]" />
+    <sap:sync-rfc key="RFC_READ_TABLE" doc:name="Synchronous Remote Function Call" doc:id="f58e82dd-a225-4829-b732-8fdc3050e0d5" config-ref="SAP_Config"/>
+    <ee:transform doc:name="Transform Message" doc:id="45ebc714-260c-4978-8b79-754f6cf9bf81" >
+      <ee:message >
+        <ee:set-payload resource="dataweaves/sap-response.dwl" />
+      
+</ee:message>
+    </ee:transform>
+	
+</flow>
+	
+	<flow name="sf:import-master-data-tzone" doc:id="4dd94e64-88db-4421-ad60-71b424de4085" >
+		<batch:job jobName="syncTzoneBatch_Job" doc:id="726e81f9-0b8d-4554-89ca-dc72183197b7" blockSize="${batch.block.size}" maxFailedRecords="${batch.maxfailed.records}">
+			<batch:process-records >
+				<batch:step name="upsertTzontData_Step" doc:id="c77c9d86-6fba-4ed9-9eaa-06966ff9ff8a">
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="a34fce63-26c6-4cb1-82e0-f522fe007371" preserveMimeTypes="true" streaming="true">
+						<ee:transform doc:name="processTzoneDataToSFDC" doc:id="dbe45066-a47f-4811-a8ab-fd0dce562dfc">
+			<ee:message>
+			</ee:message>
+              <ee:variables>
+                <ee:set-variable resource="dataweaves/tzone-sfdc-req.dwl" variableName="tzoneRequest" />
+              </ee:variables>
+		
+</ee:transform>
+            <logger level="INFO" doc:name="logTheAggregatedRecords" doc:id="38ca77c9-8ee6-460c-a28c-e515a4d1ab26" message="#[%dw 2.0&#10;output application/json&#10;---&#10;vars.tzoneRequest]"/>
+            <salesforce:upsert doc:name="Upsert" doc:id="360f4a80-ba29-4ef7-a560-a1d2871f4b03" config-ref="Salesforce_Config" objectType="Transportation_Zone__c" externalIdFieldName="Transportation_Zone_Code__c" target="createTzoneDataResponse">
+              <salesforce:records ><![CDATA[#[vars.tzoneRequest]]]></salesforce:records>
+            </salesforce:upsert>
+			<ee:transform doc:name="Transform Message" doc:id="c6c85ea8-ab75-4982-81c5-b0aa29b119ed">
+              <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+vars.createTzoneDataResponse.items.payload]]></ee:set-payload>
+              </ee:message>
+            </ee:transform>
+            <logger level="INFO" doc:name="Logger" doc:id="4ab5bcee-0d94-4d8f-aacf-dac4bfcac77e" message="payload After Upsert for flow  #[flow.name] ---&gt; #[payload]" category="ace.bootstrap.product"/>
+                <ee:transform doc:name="Extract SF Records from Upsert Response" doc:id="df6f198d-cb70-46a4-aebe-8b6e1ef72534">
+              <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( object , index ) ->
+{
+  index:index,
+  errorMessage:if(object.success != true) object.errors[0].message else "",
+  
+}]]></ee:set-payload>
+              </ee:message>
+            </ee:transform>
+            <ee:transform doc:name="Extract Success &amp; Error Records" doc:id="c901fc35-20c2-45c5-a09c-4f11997ee825">
+              <ee:message />
+              <ee:variables>
+                <ee:set-variable variableName="failureSFRecords"><![CDATA[%dw 2.0
+output application/json
+---
+payload filter ($.errorMessage != "")]]></ee:set-variable>
+                <ee:set-variable variableName="successSFRecords"><![CDATA[%dw 2.0
+output application/json
+---
+payload filter ($.errorMessage == "")]]></ee:set-variable>
+              </ee:variables>
+            </ee:transform>
+                <set-variable value="#[sizeOf(vars.successSFRecords)]" doc:name="countOfSuccessfulRecords" doc:id="543db745-4605-4b4f-a64f-04c8c37b26b1" variableName="countOfSuccessfulRecords" />
+            <set-variable value="#[sizeOf(vars.failureSFRecords)]" doc:name="countOfFailedRecords" doc:id="bb8ea3b5-d1a3-42dd-b175-01844482d054" variableName="countOfFailedRecords" />
+            <choice doc:name="Choice" doc:id="c2331331-f66b-438b-89a0-3464d5693ded">
+              <when expression="#[sizeOf(vars.failureSFRecords) &gt; 0]">
+                <foreach doc:name="Failure Records (For each loop)" doc:id="3a6b0a7c-d05c-4009-81f7-54776a6cb868" collection="#[vars.failureSFRecords]">
+                  <ee:transform doc:name="Prepare Payload to write in SFTP" doc:id="ffb3a757-9629-4276-be2f-2a1e85c4dee6">
+                    <ee:message>
+                      <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  DMSPayload: vars.tzoneRequest[payload.index],
+  errorMessage: payload.errorMessage
+}]]></ee:set-payload>
+                    </ee:message>
+                  </ee:transform>
+                </foreach>
+              </when>
+              <otherwise>
+              <logger level="INFO" doc:name="Logger" doc:id="6f4c7d2b-a35e-4909-aa0a-d27f4911fad5" message="No Error Records while upserting--**" category="ace.bootstrap.product"/>  </otherwise>
+            </choice>		
+
+</batch:aggregator>
+				</batch:step>
+			
+</batch:process-records>
+			<batch:on-complete >
+        <ee:transform doc:name="prepareMigration Result"
+					doc:id="345f64d4-e609-496e-9377-dd84a20573d7">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output text/plain
+---
+"Migration Report: \n"
+
+++ "\n Time [milliseconds]: " 		++ payload.elapsedTimeInMillis!
+++ "\n Total Records: "				++ payload.totalRecords!
+++ "\n Successful Records: "		++ payload.successfulRecords!
+++ "\n Failed Records: "			++ payload.failedRecords!
+++ "\n Loaded Records: "			++ payload.loadedRecords!
+++ "\n Processed Records: " 		++ payload.processedRecords!]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="migrationProcessHasFinished!"
+					doc:id="07f8846a-dc8e-40dc-9866-382df0e61597" message="Migration process has finished: #[payload]" />
+        <os:store doc:name="storeProgressStateToFinished" doc:id="42e942a7-7187-40ae-951c-93b2e8d70819" key="#['tzoneStatus']" objectStore="master_object_store">
+					<os:value><![CDATA[finished]]></os:value>
+				</os:store>
+
+			
+</batch:on-complete>
+		</batch:job>
+	</flow>
+	
+</mule>

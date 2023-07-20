@@ -1,0 +1,5 @@
+%dw 2.0
+
+type auto_5c09f32e_84ad_4ae2_9791_b43a538e69d7_Input_Variables_progressState = {|  |} {"typeAlias": "Serializable",
+"typeId": "java.io.Serializable"}
+

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq" 
+	xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd">
+
+	<flow name="send-notifications" doc:id="b0ccf6c0-319c-4418-986f-505c43b27dc0" >
+ 
+		
+		<logger level="INFO" doc:name="beforeSendingNotification" doc:id="594091a8-8182-4f21-8083-e386b82b94d9" message="Before sending notification"  />
+    <choice doc:name="Choice" doc:id="eed6b06e-fee2-4ee5-905d-bab2c6fe21c0" >
+			<when expression="#[lower(payload.'type') == &quot;email&quot;]">
+				<flow-ref doc:name="send-email-notification" doc:id="0c4381c8-36c6-4de2-9f68-ca525db3b5a4" name="send-email-notification"/>
+			</when>
+			<when expression="#[lower(payload.'type') == &quot;sms&quot;]">
+				<flow-ref doc:name="send-sms-notification" doc:id="baf25bf6-f648-48f7-9e4d-27dac6d2d9d5" name="send-sms-notification"/>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="noMatchingType" doc:id="594091a8-8182-4f21-8083-e386b82b94d9" message="Message type is neither email nor sms"  />
+    		
+        <!-- <raise-error doc:name="Raise error" doc:id="34e7e29b-0cff-4838-9f6e-b0ed30a393a4" type="ANY" description="Payload type is neither email nor sms"/> -->
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="afterSendingNotification" doc:id="2de09fac-d8fc-4785-9d5a-c4d4929f701a" message="After sending notification" />
+    <error-handler>
+			<on-error-propagate enableNotifications="false" logException="false" doc:name="On Error Propagate" doc:id="08f8d762-1f6a-4577-bb1c-d4ea30f5ffb3" type="ANY" >
+				<logger level="INFO" doc:name="Logger" doc:id="923c7783-a90f-4392-9c6b-0a45b403b727" message="Error during sending notification!!====== #[error.description]"/>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<sub-flow name="send-email-notification" doc:id="8a6a8fa2-b291-499e-a4ae-60cdaec99889" >
+		<choice doc:name="Choice" doc:id="b94e0f7b-061e-4a35-b2dd-e03d56f03578" >
+			<when expression='#[payload.template == "api-error-email"]'>
+				<parse-template doc:name="api-error-emaill.html" doc:id="3b2a31d5-c0aa-42c8-bb2f-9f7c2f311963" location="templates\api-error-email.html" targetValue="#[payload]"/>
+				<flow-ref doc:name="send-email-to-recipient" doc:id="5ae07337-d254-4a83-bdd1-95d2f3254468" name="send-email-to-recipient"/>
+			</when>
+			<when expression='#[payload.template == "data-error-email"]'>
+				<parse-template doc:name="data-error-emaill.html" doc:id="ed232b88-f007-46c2-814e-79a22b2289b7" location="templates\data-error-email.html" targetValue="#[payload]" />
+				<flow-ref doc:name="send-email-to-recipient" doc:id="a336fc71-60dd-441a-acf8-d80af979197c" name="send-email-to-recipient" />
+			</when>
+			<otherwise >
+				<parse-template doc:name="common-error-emaill.html" doc:id="dba38fa7-946e-471f-9941-b6715773bcb0" location="templates\common-error-email.html" targetValue="#[payload]" />
+				<flow-ref doc:name="send-email-to-recipient" doc:id="0cdc59df-bc02-4be2-b0af-726c58e2c31b" name="send-email-to-recipient" />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="send-sms-notification" doc:id="3dc35eef-b94a-4ef5-aa5b-c21ec354e315" >
+		<logger level="INFO" doc:name="Logger" doc:id="4c7ee2ca-3e38-4082-9c90-fb05fe2b841f" message="TBD"/>
+	</sub-flow>
+	<sub-flow name="send-email-to-recipient" doc:id="b6d56a67-c09c-4021-a9eb-95bc6b92d2fa" >
+		<logger level="INFO" doc:name="Logger" doc:id="fc00f61b-9e49-4a6f-aaa4-dc8468d44236" />
+    <email:send doc:name="Send" doc:id="ab3147b6-1e36-444e-8d1a-a6bdd9d2f788" config-ref="Email_SMTP" fromAddress="mulesoft.admin@example.com" subject="I am the subject of the test email">
+      <email:to-addresses >
+        <email:to-address value="tamimabdul0@gmail.com" />
+      </email:to-addresses>
+
+		</email:send>
+	</sub-flow>
+</mule>

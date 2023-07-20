@@ -1,0 +1,27 @@
+<html>
+	<body>
+		<h2>
+		Hello IT Team,
+		
+		The integration #[payload['appName']] completed with ERRORS in #[payload['environment']] Environment. The details of the errors are as follows:
+		</h2> <br><br>
+		<table>
+				<tr>
+					<th>Subject</th>
+					<th>Message</th>
+					<th>Recipient</th>
+					<th>Attachment</th>
+					<th>Template</th>
+					<th>Type</th>
+				</tr>
+				<tr>
+					<td>#[payload['subject']]</td>
+					<td>#[payload['message']]</td>
+					<td>#[payload['recipient']]</td>
+					<td>#[vars['attachment']]</td>
+					<td>#[payload['template']]</td>
+					<td>#[payload['type']]</td>
+				</tr>
+		</table>
+	</body>
+</html>
